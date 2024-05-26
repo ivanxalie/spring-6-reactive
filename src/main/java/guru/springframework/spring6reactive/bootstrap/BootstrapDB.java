@@ -1,7 +1,9 @@
 package guru.springframework.spring6reactive.bootstrap;
 
 import guru.springframework.spring6reactive.domain.Beer;
+import guru.springframework.spring6reactive.domain.Customer;
 import guru.springframework.spring6reactive.repositories.BeerRepository;
+import guru.springframework.spring6reactive.repositories.CustomerRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
@@ -16,17 +18,23 @@ import static java.time.LocalDateTime.now;
 @RequiredArgsConstructor
 @DependsOnDatabaseInitialization
 public class BootstrapDB {
-    private final BeerRepository repository;
+    private final BeerRepository beerRepository;
+    private final CustomerRepository customerRepository;
 
     @PostConstruct
     public void init() {
-        repository.count().subscribe(count -> {
-            if (count == 0) initBeers();
-        });
-        repository.findAll().subscribe(System.out::println);
+        initBeers();
+        initCustomers();
     }
 
     private void initBeers() {
+        beerRepository.count().subscribe(count -> {
+            if (count == 0) createAndSaveBeers();
+        });
+        beerRepository.findAll().subscribe(System.out::println);
+    }
+
+    private void createAndSaveBeers() {
         Beer beerDTO1 = Beer.builder()
                 .name("Galaxy Cat")
                 .style("PALE_ALE")
@@ -54,12 +62,39 @@ public class BootstrapDB {
                 .createdDate(now())
                 .lastModifiedDate(now())
                 .build();
-        repository.saveAll(
+        beerRepository.saveAll(
                 List.of(
                         beerDTO1,
                         beerDTO2,
                         beerDTO3
                 )
         ).subscribe();
+    }
+
+    private void initCustomers() {
+        customerRepository.count().subscribe(count -> {
+            if (count == 0) {
+                Customer customerDTO1 = createCustomer("Alex");
+                Customer customerDTO2 = createCustomer("Alice");
+                Customer customerDTO3 = createCustomer("Roberto");
+
+                customerRepository.saveAll(
+                        List.of(
+                                customerDTO1,
+                                customerDTO2,
+                                customerDTO3
+                        )
+                ).subscribe();
+            }
+        });
+        customerRepository.findAll().subscribe(System.out::println);
+    }
+
+    private Customer createCustomer(String name) {
+        return Customer.builder()
+                .name(name)
+                .createdDate(now())
+                .lastModifiedDate(now())
+                .build();
     }
 }

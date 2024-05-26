@@ -1,5 +1,7 @@
 package guru.springframework.spring6reactive.repositories;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.springframework.spring6reactive.domain.Beer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,8 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
+import static reactor.test.StepVerifier.create;
+
 @DataR2dbcTest
 class BeerRepositoryTest {
 
@@ -15,12 +19,17 @@ class BeerRepositoryTest {
     BeerRepository repository;
 
     @Test
+    void testCreateJackson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        System.out.println(mapper.writeValueAsString(createTestBeer()));
+    }
+
+    @Test
     void saveNewBeer() {
         Mono<Beer> saved = repository.save(createTestBeer());
-        saved.subscribe(System.out::println);
 
-//        create(saved).expectNextCount(1).verifyComplete();
-
+        create(saved).expectNextCount(1).verifyComplete();
     }
 
     Beer createTestBeer() {
