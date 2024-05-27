@@ -62,6 +62,7 @@ public class BeerController {
     Mono<ResponseEntity<Void>> deleteById(@PathVariable("beerId") Integer id) {
         return service
                 .deleteById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)))
                 .thenReturn(ResponseEntity.noContent().build());
     }
 }

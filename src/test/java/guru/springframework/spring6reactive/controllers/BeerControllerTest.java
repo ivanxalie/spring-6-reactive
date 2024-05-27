@@ -146,7 +146,6 @@ class BeerControllerTest {
                 .patch()
                 .uri(BEER_PATH + "/{beerId}", 100)
                 .body(Mono.just(createTestBeer()), BeerDTO.class)
-                .header("Content-type", APPLICATION_JSON_VALUE)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -159,5 +158,15 @@ class BeerControllerTest {
                 .uri(BEER_PATH + "/{beerId}", 1)
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    @Order(1200)
+    void testDeleteBeerNotFound() {
+        webTestClient
+                .delete()
+                .uri(BEER_PATH + "/{beerId}", 1_000)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }
