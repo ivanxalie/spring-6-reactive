@@ -6,11 +6,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static guru.springframework.spring6reactive.controllers.CustomerController.CUSTOMER_PATH;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping(CUSTOMER_PATH)
@@ -26,7 +28,9 @@ public class CustomerController {
 
     @GetMapping("/{customerId}")
     Mono<CustomerDTO> findById(@PathVariable("customerId") Integer id) {
-        return service.findById(id);
+        return service
+                .findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)));
     }
 
     @PostMapping
@@ -44,6 +48,7 @@ public class CustomerController {
                                               @Valid @RequestBody CustomerDTO customerDTO) {
         return service
                 .updateCustomer(id, customerDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)))
                 .map(saved -> ResponseEntity.noContent().build());
     }
 
@@ -52,13 +57,16 @@ public class CustomerController {
                                              @Valid @RequestBody CustomerDTO customerDTO) {
         return service
                 .patchCustomer(id, customerDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)))
                 .map(saved -> ResponseEntity.ok().build());
     }
 
     @DeleteMapping("/{customerId}")
     Mono<ResponseEntity<Void>> deleteById(@PathVariable("customerId") Integer id) {
         return service
-                .deleteById(id)
+                .findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)))
+                .map(customerDTO -> service.deleteById(id))
                 .thenReturn(ResponseEntity.noContent().build());
     }
 }

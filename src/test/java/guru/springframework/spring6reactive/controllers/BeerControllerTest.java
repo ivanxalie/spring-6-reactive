@@ -151,7 +151,7 @@ class BeerControllerTest {
     }
 
     @Test
-    @Order(999)
+    @Order(5000)
     void testDeleteBeer() {
         webTestClient
                 .delete()
