@@ -44,7 +44,7 @@ public class CustomerController {
                                               @Valid @RequestBody CustomerDTO customerDTO) {
         return service
                 .updateCustomer(id, customerDTO)
-                .map(saved -> ResponseEntity.ok().build());
+                .map(saved -> ResponseEntity.noContent().build());
     }
 
     @PatchMapping("/{customerId}")
@@ -59,6 +59,6 @@ public class CustomerController {
     Mono<ResponseEntity<Void>> deleteById(@PathVariable("customerId") Integer id) {
         return service
                 .deleteById(id)
-                .map(saved -> ResponseEntity.noContent().build());
+                .thenReturn(ResponseEntity.noContent().build());
     }
 }
