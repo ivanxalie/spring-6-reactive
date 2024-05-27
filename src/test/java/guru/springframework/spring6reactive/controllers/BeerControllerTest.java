@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
+import static guru.springframework.spring6reactive.controllers.BeerController.BEER_PATH;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @SpringBootTest
@@ -29,7 +30,7 @@ class BeerControllerTest {
     void testListBeers() {
         webTestClient
                 .get()
-                .uri(BeerController.BEER_PATH)
+                .uri(BEER_PATH)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-type", APPLICATION_JSON_VALUE)
@@ -41,7 +42,7 @@ class BeerControllerTest {
     void testGetById() {
         webTestClient
                 .get()
-                .uri(BeerController.BEER_PATH + "/{beerId}", 1)
+                .uri(BEER_PATH + "/{beerId}", 1)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-type", APPLICATION_JSON_VALUE)
@@ -49,17 +50,47 @@ class BeerControllerTest {
     }
 
     @Test
+    @Order(2)
+    void testGetByIdNotFound() {
+        webTestClient
+                .get()
+                .uri(BEER_PATH + "/{beerId}", 1_000)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     @Order(300)
     void testCreateBeer() {
         webTestClient
                 .post()
-                .uri(BeerController.BEER_PATH)
+                .uri(BEER_PATH)
                 .body(Mono.just(createTestBeer()), BeerDTO.class)
                 .header("Content-type", APPLICATION_JSON_VALUE)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectHeader().location("http://localhost:8080/api/v2/beer/4")
                 .expectBody(BeerDTO.class);
+    }
+
+    @Test
+    @Order(350)
+    void testCreateBeerBadData() {
+        BeerDTO badBeer = createBadBeer();
+
+        webTestClient
+                .post()
+                .uri(BEER_PATH)
+                .body(Mono.just(badBeer), BeerDTO.class)
+                .header("Content-type", APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    private BeerDTO createBadBeer() {
+        return BeerDTO.builder()
+                .name("")
+                .build();
     }
 
     Beer createTestBeer() {
@@ -77,7 +108,7 @@ class BeerControllerTest {
     void testUpdateBeer() {
         webTestClient
                 .put()
-                .uri(BeerController.BEER_PATH + "/{beerId}", 1)
+                .uri(BEER_PATH + "/{beerId}", 1)
                 .body(Mono.just(createTestBeer()), BeerDTO.class)
                 .header("Content-type", APPLICATION_JSON_VALUE)
                 .exchange()
@@ -85,11 +116,47 @@ class BeerControllerTest {
     }
 
     @Test
+    @Order(450)
+    void testUpdateBeerNotFound() {
+        webTestClient
+                .put()
+                .uri(BEER_PATH + "/{beerId}", 100)
+                .body(Mono.just(createTestBeer()), BeerDTO.class)
+                .header("Content-type", APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    @Order(450)
+    void testUpdateBeerBadRequest() {
+        webTestClient
+                .put()
+                .uri(BEER_PATH + "/{beerId}", 1)
+                .body(Mono.just(createBadBeer()), BeerDTO.class)
+                .header("Content-type", APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    @Order(550)
+    void testPatchBeerNotFound() {
+        webTestClient
+                .patch()
+                .uri(BEER_PATH + "/{beerId}", 100)
+                .body(Mono.just(createTestBeer()), BeerDTO.class)
+                .header("Content-type", APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     @Order(999)
     void testDeleteBeer() {
         webTestClient
                 .delete()
-                .uri(BeerController.BEER_PATH + "/{beerId}", 1)
+                .uri(BEER_PATH + "/{beerId}", 1)
                 .exchange()
                 .expectStatus().isNoContent();
     }

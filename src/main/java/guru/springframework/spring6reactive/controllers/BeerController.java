@@ -6,11 +6,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static guru.springframework.spring6reactive.controllers.BeerController.BEER_PATH;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping(BEER_PATH)
@@ -26,7 +28,8 @@ public class BeerController {
 
     @GetMapping("/{beerId}")
     Mono<BeerDTO> findById(@PathVariable("beerId") Integer id) {
-        return service.findById(id);
+        return service.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)));
     }
 
     @PostMapping
@@ -43,6 +46,7 @@ public class BeerController {
     Mono<ResponseEntity<Void>> updateBeer(@PathVariable("beerId") Integer id, @Valid @RequestBody BeerDTO beerDTO) {
         return service
                 .updateBeer(id, beerDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)))
                 .map(saved -> ResponseEntity.noContent().build());
     }
 
@@ -50,6 +54,7 @@ public class BeerController {
     Mono<ResponseEntity<Void>> patchBeer(@PathVariable("beerId") Integer id, @Valid @RequestBody BeerDTO beerDTO) {
         return service
                 .patchBeer(id, beerDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(NOT_FOUND)))
                 .map(saved -> ResponseEntity.ok().build());
     }
 
