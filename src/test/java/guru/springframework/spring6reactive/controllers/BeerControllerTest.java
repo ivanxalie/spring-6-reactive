@@ -1,5 +1,6 @@
 package guru.springframework.spring6reactive.controllers;
 
+import guru.springframework.spring6reactive.TestConfig;
 import guru.springframework.spring6reactive.domain.Beer;
 import guru.springframework.spring6reactive.model.BeerDTO;
 import org.junit.jupiter.api.MethodOrderer;
@@ -17,7 +18,7 @@ import java.math.BigDecimal;
 import static guru.springframework.spring6reactive.controllers.BeerController.BEER_PATH;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@SpringBootTest
+@SpringBootTest(classes = TestConfig.class)
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class BeerControllerTest {
