@@ -2,6 +2,11 @@
 #  level:
 #    org.springframework.r2dbc: trace
 
+logging:
+  level:
+    guru.springframework: debug
+    org.zalando.logbook: trace
+
 spring:
   security:
     oauth2:
